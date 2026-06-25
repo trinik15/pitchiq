@@ -1,0 +1,5 @@
+streamlit==1.45.1
+pybaseball==2.2.7
+plotly==5.22.0
+pandas==2.2.3
+numpy==1.26.4
