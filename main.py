@@ -1,4 +1,4 @@
-# main.py — PitchIQ root launcher
+# main.py - PitchIQ root launcher
 # Usage: streamlit run main.py
 import os
 import sys

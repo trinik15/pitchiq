@@ -3139,7 +3139,7 @@ MLB average a metric falls. Used to assign letter grades.
         else:
             with st.status("Loading pitcher data from Baseball Savant…", expanded=True) as _load_status:
                 st.write(f"🔍 **Step 1/3** - Searching MLB player database for **{pitcher_name}**…")
-                st.write("⬇️ **Step 2/3** - Downloading Statcast pitch-by-pitch data (typically 45–90 seconds for a full season)…")
+                st.write("⬇️ **Step 2/3** - Downloading Statcast pitch-by-pitch data (typically 45-90 seconds for a full season)…")
                 st.write("⚙️ **Step 3/3** - Computing pitch grades, platoon splits, and count tendencies…")
                 result = load_pitcher_data(pitcher_name, season)
                 if result is not None:
