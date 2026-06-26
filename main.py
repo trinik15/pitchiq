@@ -3,11 +3,14 @@
 import os
 import sys
 
-# Resolve path to the actual app so Path(__file__).parent works correctly inside app.py
+# Add repo root to path so the 'pitchiq' package is importable as a module.
+# This lets app.py be loaded via a clean import instead of exec(), which
+# preserves IDE static analysis, correct __file__ resolution, and the normal
+# Python module system.
 _here = os.path.dirname(os.path.abspath(__file__))
-_app = os.path.join(_here, "pitchiq", "app.py")
+if _here not in sys.path:
+    sys.path.insert(0, _here)
 
-with open(_app, "r", encoding="utf-8") as _f:
-    _src = _f.read()
+from pitchiq.app import main  # noqa: E402
 
-exec(compile(_src, _app, "exec"), {"__file__": _app, "__name__": "__main__"})
+main()

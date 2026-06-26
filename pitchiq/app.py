@@ -1311,43 +1311,6 @@ def yoy_delta_table(curr: pd.DataFrame, prev: pd.DataFrame,
     return merged.fillna("-")
 
 
-def yoy_velocity_trend(curr: pd.DataFrame, prev: pd.DataFrame,
-                       season_curr: int, season_prev: int) -> go.Figure | None:
-    frames = []
-    for data, season in [(curr, season_curr), (prev, season_prev)]:
-        if "game_date" not in data.columns or "release_speed" not in data.columns:
-            continue
-        df = data[["game_date", "release_speed"]].copy()
-        df["game_date"] = pd.to_datetime(df["game_date"])
-        daily = df.groupby("game_date")["release_speed"].mean().reset_index()
-        daily["Season"] = str(season)
-        frames.append(daily)
-
-    if not frames:
-        return None
-
-    combined = pd.concat(frames, ignore_index=True)
-    color_map = {str(season_curr): "#E63946", str(season_prev): "#4361EE"}
-
-    fig = px.line(
-        combined,
-        x="game_date",
-        y="release_speed",
-        color="Season",
-        color_discrete_map=color_map,
-        markers=True,
-        labels={"release_speed": "Avg Velocity (mph)", "game_date": "Date"},
-        title="Average Pitch Velocity by Start Date",
-    )
-    fig.update_traces(marker=dict(size=6))
-    fig.update_layout(
-        **dark_layout(),
-        xaxis=dict(gridcolor="#1e2130"),
-        yaxis=dict(gridcolor="#1e2130"),
-    )
-    return fig
-
-
 # ── Multi-season helpers ──────────────────────────────────────────────────────
 
 @st.cache_data(ttl=3600, show_spinner=False)
@@ -1818,7 +1781,10 @@ def fatigue_velocity(data: pd.DataFrame, min_starts: int = 3) -> dict | None:
     if n_starts < min_starts:
         return None
 
-    FASTBALL_TYPES = {"FF", "SI", "FC"}
+    # Use the module-level FASTBALL_FAMILY constant (FF, SI, FC) so any future
+    # pitch-type additions to PITCH_CATEGORY_MAP are picked up automatically.
+    # (Previously a local FASTBALL_TYPES = {"FF", "SI", "FC"} shadowed the module
+    # constant, silently diverging if PITCH_CATEGORY_MAP was ever updated.)
 
     # by_inning: all pitch types, inning <= 9, min 10 pitches per cell
     inn_data = data[data["inning"] <= 9].copy()
@@ -3045,7 +3011,16 @@ def main():
             value="Paul Skenes",
             placeholder="e.g. Gerrit Cole",
         )
-        season = st.selectbox("Season", [2026, 2025, 2024], index=1)
+        season = st.selectbox(
+            "Season",
+            [2026, 2025, 2024],
+            index=1,
+            format_func=lambda y: f"{y} (→ loads 2025)" if y == 2026 else str(y),
+            help=(
+                "2026 Statcast data is not yet available. Selecting 2026 automatically "
+                "loads the pitcher's most recent 2025 season instead."
+            ),
+        )
         search = st.button("Analyze", type="primary")
 
         # ── BUG FIX: update displayed state IMMEDIATELY on click, before the
